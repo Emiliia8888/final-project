@@ -1,0 +1,11 @@
+image:
+  repository: 034255117140.dkr.ecr.eu-central-1.amazonaws.com/django-app-gitops
+
+  tag: latest
+
+
+replicaCount: 1
+
+
+containerPort: 8000
+
