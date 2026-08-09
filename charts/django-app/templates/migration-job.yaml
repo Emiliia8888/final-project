@@ -32,29 +32,29 @@ spec:
         - name: DB_HOST
           valueFrom:
             secretKeyRef:
-              name: django-postgresql
+              name: django-config
               key: host
 
         - name: DB_NAME
           valueFrom:
             secretKeyRef:
-              name: django-postgresql
+              name: django-config
               key: database
 
         - name: DB_USER
           valueFrom:
             secretKeyRef:
-              name: django-postgresql
+              name: django-config
               key: username
 
         - name: DB_PASSWORD
           valueFrom:
             secretKeyRef:
-              name: django-postgresql
+              name: django-config
               key: password
 
         - name: DB_PORT
           valueFrom:
             secretKeyRef:
-              name: django-postgresql
+              name: django-config
               key: port
