@@ -57,36 +57,36 @@ spec:
             drop:
               - ALL
 
-        env:
-        - name: DJANGO_SETTINGS_MODULE
-          value: "core.settings"
+env:
+- name: DJANGO_SETTINGS_MODULE
+  value: "core.settings"
 
-        - name: DB_HOST
-          valueFrom:
-            secretKeyRef:
-              name: django-postgresql
-              key: host
+- name: DB_HOST
+  valueFrom:
+    configMapKeyRef:
+      name: django-config
+      key: DB_HOST
 
-        - name: DB_NAME
-          valueFrom:
-            secretKeyRef:
-              name: django-postgresql
-              key: database
+- name: DB_NAME
+  valueFrom:
+    configMapKeyRef:
+      name: django-config
+      key: DB_NAME
 
-        - name: DB_USER
-          valueFrom:
-            secretKeyRef:
-              name: django-postgresql
-              key: username
+- name: DB_USER
+  valueFrom:
+    configMapKeyRef:
+      name: django-config
+      key: DB_USER
 
-        - name: DB_PASSWORD
-          valueFrom:
-            secretKeyRef:
-              name: django-postgresql
-              key: password
+- name: DB_PORT
+  valueFrom:
+    configMapKeyRef:
+      name: django-config
+      key: DB_PORT
 
-        - name: DB_PORT
-          valueFrom:
-            secretKeyRef:
-              name: django-postgresql
-              key: port
+- name: DB_PASSWORD
+  valueFrom:
+    secretKeyRef:
+      name: django-secret
+      key: DB_PASSWORD
