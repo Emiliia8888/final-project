@@ -1,3 +1,4 @@
+
 terraform {
   required_version = ">= 1.5.0"
 
@@ -14,7 +15,7 @@ terraform {
 
     helm = {
       source  = "hashicorp/helm"
-      version = "~> 2.17"
+      version = "~> 3.2"
     }
   }
 }
@@ -23,44 +24,45 @@ provider "aws" {
   region = var.region
 }
 
+data "aws_eks_cluster" "existing" {
+  name = "dev-eks-cluster"
+}
+
 provider "helm" {
-  kubernetes {
-    host                   = module.eks.cluster_endpoint
-    cluster_ca_certificate = base64decode(module.eks.cluster_certificate_authority_data)
+  kubernetes = {
+    host                   = data.aws_eks_cluster.existing.endpoint
+    cluster_ca_certificate = base64decode(data.aws_eks_cluster.existing.certificate_authority[0].data)
 
-    exec {
+    exec = {
       api_version = "client.authentication.k8s.io/v1beta1"
-
-      command = "aws"
+      command     = "aws"
 
       args = [
         "eks",
         "get-token",
         "--cluster-name",
-        module.eks.cluster_name
+        data.aws_eks_cluster.existing.name
       ]
     }
   }
 }
 
 provider "kubernetes" {
-  host                   = module.eks.cluster_endpoint
-  cluster_ca_certificate = base64decode(module.eks.cluster_certificate_authority_data)
+  host                   = data.aws_eks_cluster.existing.endpoint
+  cluster_ca_certificate = base64decode(data.aws_eks_cluster.existing.certificate_authority[0].data)
 
   exec {
     api_version = "client.authentication.k8s.io/v1beta1"
-
-    command = "aws"
+    command     = "aws"
 
     args = [
       "eks",
       "get-token",
       "--cluster-name",
-      module.eks.cluster_name
+      data.aws_eks_cluster.existing.name
     ]
   }
 }
-
 
 module "vpc" {
   source = "./modules/vpc"
@@ -70,9 +72,8 @@ module "vpc" {
 module "rds" {
   source = "./modules/rds"
 
-  vpc_id = module.vpc.vpc_id
-
-  private_subnets = module.vpc.private_subnets
+  vpc_id          = var.rds_vpc_id
+  private_subnets = var.rds_private_subnets
 
   use_aurora = false
 
@@ -85,7 +86,6 @@ module "rds" {
   master_username = "django_admin"
   master_password = var.db_password
 }
-
 
 module "ecr" {
   source = "./modules/ecr"
@@ -107,6 +107,11 @@ module "eks" {
 module "jenkins" {
   source = "./modules/jenkins"
 
+  providers = {
+    kubernetes = kubernetes
+    helm       = helm
+  }
+
   cluster_name      = module.eks.cluster_name
   oidc_provider_arn = module.eks.oidc_provider_arn
   oidc_provider_url = module.eks.oidc_provider
@@ -117,9 +122,13 @@ module "jenkins" {
 }
 
 
-
 module "argo_cd" {
   source = "./modules/argo_cd"
+
+  providers = {
+    kubernetes = kubernetes
+    helm       = helm
+  }
 
   depends_on = [
     module.eks
@@ -127,16 +136,33 @@ module "argo_cd" {
 }
 
 module "aws_load_balancer_controller" {
-
   source = "./modules/aws_load_balancer_controller"
 
+  providers = {
+    kubernetes = kubernetes
+    helm       = helm
+  }
+
   cluster_name = module.eks.cluster_name
+  vpc_id       = module.vpc.vpc_id
 
   oidc_provider_arn = module.eks.oidc_provider_arn
-
   oidc_provider_url = module.eks.oidc_provider
 
   depends_on = [
     module.eks
+  ]
+}
+
+module "monitoring" {
+  source = "./modules/monitoring"
+
+  providers = {
+    helm = helm
+  }
+
+  depends_on = [
+    module.eks,
+    module.aws_load_balancer_controller
   ]
 }

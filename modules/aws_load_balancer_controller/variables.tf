@@ -19,3 +19,7 @@ variable "service_account_name" {
   type    = string
   default = "aws-load-balancer-controller"
 }
+
+variable "vpc_id" {
+  type = string
+}

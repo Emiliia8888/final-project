@@ -18,7 +18,8 @@ resource "kubernetes_service_v1" "argocd_server_lb" {
       port        = 80
       target_port = 8080
     }
-    type = "LoadBalancer"
+    type                = "LoadBalancer"
+    load_balancer_class = "service.k8s.aws/nlb"
   }
 }
 
@@ -49,8 +50,8 @@ resource "helm_release" "django_app" {
   version   = "0.1.0"
   namespace = kubernetes_namespace_v1.argocd.metadata[0].name
 
-  wait    = true
-  timeout = 300
+  wait         = true
+  timeout      = 300
   force_update = true
 
   lifecycle {

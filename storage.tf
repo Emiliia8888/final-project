@@ -16,7 +16,7 @@ resource "kubernetes_storage_class" "gp3" {
   allow_volume_expansion = true
 
   parameters = {
-    type      = "gp3"
-    encrypted = "true"
+    type   = "gp3"
+    fsType = "ext4"
   }
 }
