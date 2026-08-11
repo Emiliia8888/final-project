@@ -72,9 +72,9 @@ module "aws_eks" {
         "t3.medium"
       ]
 
-tags = {
-  Name = "dev-node-group"
-}
+      tags = {
+        Name = "dev-node-group"
+      }
 
       subnet_ids = var.subnets
 
