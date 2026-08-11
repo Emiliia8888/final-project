@@ -19,6 +19,7 @@ resource "helm_release" "kube_prometheus_stack" {
   timeout = 300
   wait    = true
 
+
   values = [
     yamlencode({
       grafana = {
