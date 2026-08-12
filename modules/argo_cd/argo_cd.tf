@@ -36,14 +36,6 @@ resource "helm_release" "argocd" {
   ]
 }
 
-resource "terraform_data" "argo_chart" {
-  triggers_replace = [
-    filesha256("${path.module}/charts/templates/application.yaml"),
-    filesha256("${path.module}/charts/values.yaml"),
-    filesha256("${path.module}/charts/Chart.yaml")
-  ]
-}
-
 resource "helm_release" "django_app" {
   name      = "django-app"
   chart     = "${path.module}/charts"
@@ -53,13 +45,6 @@ resource "helm_release" "django_app" {
   wait         = true
   timeout      = 300
   force_update = true
-
-  lifecycle {
-    replace_triggered_by = [
-      terraform_data.argo_chart
-    ]
-  }
-
   depends_on = [
     helm_release.argocd
   ]

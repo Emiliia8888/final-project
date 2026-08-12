@@ -126,7 +126,7 @@ Application:
     django-app
 Git repository:
 
-    https://github.com/Emiliia8888/Lesson-8-9.git
+    https://github.com/Emiliia8888/final-project.git
 Branch:
 
     main
