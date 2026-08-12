@@ -65,7 +65,7 @@ AWS Region
 
 EKS Cluster
 
-    django-gitops-cluster
+    dev-eks-cluster
 
 Implemented:
 
@@ -148,9 +148,8 @@ Django Application
 Container image:
 
     034255117140.dkr.ecr.eu-central-1.amazonaws.com/django-app-gitops
-Current deployed image:
+The Docker image is stored in Amazon ECR and its tag is managed automatically by the Jenkins CI/CD pipeline.
 
-    django-app-gitops:34
 Deployment includes:
 
     -Kubernetes Deployment
@@ -298,11 +297,13 @@ Monitoring:
 
 ### Horizontal Pod Autoscaler
 
-Django application:
+Django application HPA is configured through the Helm chart:
 
     -Minimum replicas: 1
     -Maximum replicas: 5
     -CPU target: 70%
+
+The HPA configuration is managed through the Helm chart.
 
 ## Terraform Structure
 ```text
