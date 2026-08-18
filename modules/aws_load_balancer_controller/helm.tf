@@ -3,8 +3,7 @@ resource "helm_release" "aws_load_balancer_controller" {
   repository = "https://aws.github.io/eks-charts"
   chart      = "aws-load-balancer-controller"
   version    = "3.4.2"
-  namespace  = var.namespace
-  wait       = true
+  namespace  = "kube-system"
 
   set = [
     {
@@ -21,8 +20,11 @@ resource "helm_release" "aws_load_balancer_controller" {
     },
     {
       name  = "serviceAccount.name"
-      value = var.service_account_name
+      value = "aws-load-balancer-controller"
     }
   ]
 
+  depends_on = [
+    kubernetes_service_account_v1.aws_load_balancer_controller
+  ]
 }

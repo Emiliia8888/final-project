@@ -1,469 +1,177 @@
-# Django GitOps Platform
+# Lesson 8–9: CI/CD для Django в Amazon EKS за допомогою Jenkins, Helm, Terraform та Argo CD
 
-Production-style Django deployment platform built with Terraform, AWS EKS and GitOps principles.
+# Опис проєкту
 
-## Project Overview
+Цей проєкт реалізує повний GitOps CI/CD-процес для Django-застосунку в Amazon EKS.
 
-This project implements a complete cloud-native deployment workflow:
+Інфраструктура створюється за допомогою Terraform, Jenkins та Argo CD встановлюються через Helm, а весь процес збірки й розгортання автоматизовано.
 
-- Infrastructure as Code with Terraform
-- Amazon EKS Kubernetes cluster
-- Jenkins CI/CD pipeline
-- ArgoCD GitOps deployment
-- Amazon ECR container registry
-- AWS Application Load Balancer
-- PostgreSQL database deployed with Helm
-- AWS RDS PostgreSQL reusable infrastructure module
-- AWS Secrets Manager integration
-- External Secrets Operator
-- Kubernetes production hardening
-- Horizontal Pod Autoscaling
+Після кожного коміту Jenkins автоматично:
 
+* збирає Docker-образ Django-застосунку;
+* публікує образ у Amazon ECR;
+* оновлює тег образу в Helm chart окремого Git-репозиторію;
+* виконує push змін у гілку `main`.
 
-## Architecture
+Після цього Argo CD автоматично виявляє зміни в Git-репозиторії та синхронізує застосунок із Kubernetes-кластером відповідно до принципів GitOps.
+
+---
+
+# Використані технології
+
+* **Terraform** — створення AWS-інфраструктури.
+* **Amazon EKS** — Kubernetes-кластер.
+* **Amazon ECR** — сховище Docker-образів.
+* **Amazon S3 + DynamoDB** — backend для Terraform state.
+* **Helm** — встановлення Jenkins, Argo CD та керування Helm chart застосунку.
+* **Jenkins** — автоматизація CI/CD.
+* **Kubernetes Agent** — виконання Jenkins Pipeline у Kubernetes.
+* **Kaniko** — збірка Docker-образів без Docker Daemon.
+* **Git** — зберігання Helm chart та GitOps workflow.
+* **Argo CD** — автоматичне розгортання застосунку після змін у Git.
+
+---
+
+# Структура проєкту
 
 ```text
-Developer
-    |
-    v
-GitHub Repository
-    |
-    v
-Jenkins CI/CD
-    |
-    v
-Kaniko Docker Build
-    |
-    v
-Amazon ECR
-    |
-    v
-ArgoCD
-    |
-    v
-Amazon EKS
-    |
-    +----------------+
-    |                |
-    v                v
-Django App     PostgreSQL
-                   |
-                   v
-              Kubernetes PVC
-                   |
-                   v
-              AWS EBS gp3
-
-```
-
-## Infrastructure
-Infrastructure is provisioned using Terraform.
- 
-AWS Region
-
-    eu-central-1
-
-EKS Cluster
-
-    django-gitops-cluster
-
-Implemented:
-
-    -VPC
-    -Public and private subnets
-    -NAT Gateway
-    -EKS Cluster
-    -Managed Node Group
-    -OIDC Provider
-    -IRSA
-    -EBS CSI Driver
-    -gp3 StorageClass
-
-## Kubernetes Platform
-## Jenkins
-Jenkins is used for CI/CD automation.
-
-Responsibilities:
-
-    -Checkout application source code
-    -Build Docker images using Kaniko
-    -Authenticate to Amazon ECR
-    -Push images to Amazon ECR
-    -Update Helm image tag in Git repository
-
-Jenkins Kaniko ECR Authentication
-Implemented:
-
-    -Kubernetes Jenkins agent
-    -ecr-login initContainer
-    -AWS CLI authentication
-    -Shared /kaniko/.docker/config.json
-    -Kaniko image builder
-
-Verification:
-
-```bash
-    kubectl get pods -n jenkins
-```
-
-Pipeline job:
-
-    django-app-pipeline
-The pipeline performs:
-
-    -Git checkout
-    -Docker image build
-    -Push image to Amazon ECR
-    -Update Helm values
-    -Commit changes to GitHub
-
-## ArgoCD
-
-ArgoCD provides GitOps deployment.
-
-Application:
-
-    django-app
-Git repository:
-
-    https://github.com/Emiliia8888/final-project.git
-Branch:
-
-    main
-Verification:
-
-```bash
-    kubectl get application django-app -n argocd
-```
-
-Expected result:
-
-    NAME         SYNC STATUS   HEALTH STATUS
-    django-app   Synced        Healthy
-
-## Application
-
-Django Application
-
-Container image:
-
-    034255117140.dkr.ecr.eu-central-1.amazonaws.com/django-app-gitops
-Current deployed image:
-
-    django-app-gitops:34
-Deployment includes:
-
-    -Kubernetes Deployment
-    -Services
-    -Configurations
-    -Health checks
-    -Resource limits
-    -SecurityContext
-    -Horizontal Pod Autoscaling
-
-Verification:
-
-```bash
-    kubectl get deployment django-app -n default \
-    -o jsonpath='{.spec.template.spec.containers[0].image}'
-```
-
-## Production Hardening
-
-Implemented Kubernetes production practices.
-
-### Container Security
-    -Non-root containers
-    -SecurityContext
-    -Seccomp profile
-
-### Availability
-    -Readiness probes
-    -Liveness probes
-    -PodDisruptionBudget
-
-### Resource Management
-Configured:
-
-    -CPU requests
-    -CPU limits
-    -Memory requests
-    -Memory limits
-
-### Networking
-Implemented:
-
-    -Kubernetes NetworkPolicy
-    -Private workload communication
-
-## Database
-
-### PostgreSQL
-Current Django deployment uses PostgreSQL deployed through Helm dependency.
-Implemented:
-
-    -PostgreSQL StatefulSet
-    -PersistentVolumeClaim
-    -gp3 StorageClass
-    -AWS EBS CSI integration
-
-Django database connection is configured through Kubernetes Secret:
-
-    django-postgresql
-
-Environment variables:
-
-    -DB_HOST
-    -DB_NAME
-    -DB_USER
-    -DB_PASSWORD
-    -DB_PORT
-
-## Amazon RDS
-
-Terraform includes a reusable RDS module.
-
-Location:
-
-    modules/rds/
-
-The module supports:
-
-### Standard RDS
-
-    use_aurora=false
-
-Creates:
-
-    -aws_db_instance
-    -aws_db_subnet_group
-    -aws_security_group
-    -aws_db_parameter_group
-
-### Aurora
-
-    use_aurora=true
-
-Creates:
-
-    -aws_rds_cluster
-    -aws_rds_cluster_instance
-    -aws_db_subnet_group
-    -aws_security_group
-    -aws_rds_cluster_parameter_group
-
-Current Terraform RDS instance:
-
-    django-rds-instance
-
-Endpoint:
-
-    django-rds-instance.ctskymysi6zv.eu-central-1.rds.amazonaws.com:5432
-
-## Secrets Management
-
-Implemented:
-
-    -AWS Secrets Manager
-    -IAM permissions
-    -External Secrets Operator
-    -ClusterSecretStore
-    -ExternalSecret
-
-External Secrets infrastructure is ready.
-
-Current PostgreSQL credentials are provided through Kubernetes Secret generated by Helm PostgreSQL dependency.
-
-## Networking
-
-AWS Load Balancer Controller
-
-Provides:
-
-    -Kubernetes Ingress integration
-    -AWS ALB provisioning
-
-Application Load Balancer:
-
-    -Public application access
-    -HTTP health checks
-
-## Autoscaling
-
-Metrics Server
-
-Monitoring:
-
-    kubectl top pods
-
-### Horizontal Pod Autoscaler
-
-Django application:
-
-    -Minimum replicas: 1
-    -Maximum replicas: 5
-    -CPU target: 70%
-
-## Terraform Structure
-```text
-.
-├── modules
-│   ├── vpc
-│   ├── eks
-│   ├── rds
-│   ├── jenkins
-│   └── argo_cd
+Project/
 │
-├── charts
-│   └── django-app
-│
-├── storage.tf
-├── providers.tf
 ├── main.tf
-└── variables.tf
-...
+├── backend.tf
+├── outputs.tf
+│
+├── modules/
+│   ├── s3-backend/
+│   ├── vpc/
+│   ├── eks/
+│   ├── ecr/
+│   ├── jenkins/
+│   └── argo_cd/
+│
+├── charts/
+│   └── django-app/
+│
+└── Jenkinsfile
 ```
 
-## Deployment Instructions
-Terraform
+---
+
+# Інфраструктура
+
+Terraform автоматично створює:
+
+* VPC
+* Amazon EKS
+* Amazon ECR
+* S3 Backend
+* DynamoDB Lock Table
+
+Після створення EKS Terraform встановлює через Helm:
+
+* Jenkins
+* Argo CD
+
+---
+
+# Jenkins Pipeline
+
+Pipeline реалізовано в `Jenkinsfile`.
+
+Він виконує такі етапи:
+
+1. Checkout вихідного коду.
+2. Збірка Docker-образу за допомогою Kaniko.
+3. Публікація образу в Amazon ECR.
+4. Клонування репозиторію з Helm chart.
+5. Оновлення тегу Docker-образу у `values.yaml`.
+6. Commit та Push змін у гілку `main`.
+
+---
+
+# Kubernetes Agent
+
+Jenkins використовує Kubernetes Agent.
+
+Pipeline запускається всередині Pod, який містить два контейнери:
+
+* **Kaniko** — збірка Docker-образу;
+* **Git** — робота з Helm-репозиторієм.
+
+Такий підхід не потребує встановлення Docker Engine на Jenkins Master.
+
+---
+
+# Helm
+
+Helm використовується для:
+
+* встановлення Jenkins;
+* встановлення Argo CD;
+* розгортання Django-застосунку.
+
+Helm chart Django містить:
+
+* Deployment;
+* Service;
+* ConfigMap;
+* Secret;
+* Horizontal Pod Autoscaler.
+
+---
+
+# GitOps Workflow
+
+Після кожної зміни вихідного коду відбувається такий процес:
+
+1. Developer виконує push у Git.
+2. Jenkins запускає Pipeline.
+3. Kaniko збирає Docker-образ.
+4. Образ публікується в Amazon ECR.
+5. Jenkins оновлює тег образу в Helm chart.
+6. Jenkins виконує push змін у репозиторій Helm.
+7. Argo CD автоматично виявляє новий commit.
+8. Argo CD синхронізує Kubernetes-кластер.
+9. У кластері запускається нова версія застосунку.
+
+---
+
+# Argo CD
+
+Argo CD налаштований на автоматичну синхронізацію:
+
+* `automated`
+* `prune: true`
+* `selfHeal: true`
+
+Після оновлення Helm chart новий Docker-образ автоматично розгортається в Amazon EKS без ручного втручання.
+
+---
+
+# Розгортання інфраструктури
 
 ```bash
-Initialize:
-    terraform init
-    terraform validate
-    terraform plan
-    terraform apply
+terraform init
+terraform apply -auto-approve
 ```
 
-Terraform manages:
+Після завершення застосування Terraform буде створено:
 
-    -AWS infrastructure
-    -Kubernetes resources
-    -Helm releases
+* Amazon EKS;
+* Amazon ECR;
+* Jenkins;
+* Argo CD.
 
-### Helm
+---
 
-Update dependencies:
+# Результат
 
-```bash
-    helm dependency update charts/django-app   
-```
+У результаті реалізовано повністю автоматизований GitOps CI/CD процес:
 
-Validate templates:
+* Terraform автоматично створює інфраструктуру AWS.
+* Jenkins автоматично збирає Docker-образ.
+* Docker-образ публікується в Amazon ECR.
+* Jenkins автоматично оновлює Helm chart.
+* Argo CD автоматично синхронізує Kubernetes-кластер після змін у Git.
 
-```bash
-    helm template charts/django-app
-```
-
-### Kubernetes Verification
-Check cluster:
-```bash
-    kubectl get nodes
-```
-
-Check workloads:
-```bash
-    kubectl get pods -A
-```
-
-Check services:
-```bash
-    kubectl get svc -A
-```
-### Jenkins Verification
-Check Jenkins:
-
-```bash
-    kubectl get pods -n jenkins
-```
-
-Run Jenkins job:
-
-    django-app-pipeline
-
-Successful pipeline includes:
-
-    -Kaniko build
-    -ECR push
-    -Git update with new image tag
-
-### ArgoCD Verification
-
-Check application status:
-
-```bash
-    kubectl get application django-app -n argocd
-```
-
-Expected:
-
-    django-app   Synced   Healthy
-
-Check deployed image:
-
-```bash
-    kubectl get deployment django-app -n default \
-    -o jsonpath='{.spec.template.spec.containers[0].image}'
-```
-
-## Deployment Flow
-
-```text
-Developer pushes code
-        |
-        v
-GitHub Repository
-        |
-        v
-Jenkins Pipeline
-        |
-        v
-Kaniko builds image
-        |
-        v
-Amazon ECR
-        |
-        v
-Jenkins updates Helm values
-        |
-        v
-ArgoCD detects changes
-        |
-        v
-Kubernetes deployment updated
-        |
-        v
-Django application available
-```
-
-## Technologies
-
-    - Terraform
-    - AWS
-    - Amazon EKS
-    - Kubernetes
-    - Helm
-    - ArgoCD
-    - Jenkins
-    - Docker
-    - Kaniko
-    - Amazon ECR
-    - PostgreSQL
-    - Amazon RDS
-    - AWS Secrets Manager
-    - External Secrets Operator
-
-## Project Status
-
-Implemented:
-
-    -Infrastructure automation
-    -Kubernetes orchestration
-    -CI/CD pipeline
-    -GitOps workflow
-    -PostgreSQL deployment
-    -Secret management infrastructure
-    -Autoscaling
-    -Kubernetes security hardening
-
-This project demonstrates a complete GitOps-based deployment workflow on AWS using Terraform, Jenkins, Kaniko, ArgoCD and Kubernetes.
+Таким чином забезпечується безперервне розгортання (Continuous Deployment) Django-застосунку в Amazon EKS відповідно до принципів GitOps.

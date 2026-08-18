@@ -1,31 +1,33 @@
-.terraform/
-*.tfstate
-*.tfstate.backup
-.terraform.lock.hcl
+# Python
 .venv/
 __pycache__/
 *.pyc
+
+# Django
+*.sqlite3
+.env
+
+# Terraform
+.terraform/
+*.tfstate
+*.tfstate.*
+*.tfplan
+
+# Mac
 .DS_Store
 
-# Local Terraform secrets
+# IDE
+.vscode/
 .idea/
-
-# Local Terraform variables
+.terraform/
+*.tfstate
+*.tfstate.*
 *.tfvars
+.venv/
+.DS_Store
+*.backup
+tfplan*
 
-# Terraform local state/plan artifacts
-*.tfplan
-*.tfplan.json
-tfplan
-tfplan.json
-*-plan.txt
-plan.txt
-plan-*
-current-state.json
-state-*.json
-provider-schema.json
-
-# Local Terraform inspection outputs
-final-state-list.txt
-state-final-resources.txt
-final-tfplan
+# Kubernetes secrets
+charts/django-app/secret.yaml
+charts/django-app/templates/secret.yaml
