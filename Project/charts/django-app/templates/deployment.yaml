@@ -39,3 +39,11 @@ spec:
 
         - containerPort: {{ .Values.containerPort }}
 
+        envFrom:
+
+        - configMapRef:
+            name: django-config
+
+        - secretRef:
+            name: django-app-django-app-secret
+
