@@ -1,0 +1,96 @@
+===== DATE =====
+Thu Aug 20 13:14:20 BST 2026
+
+===== EKS CLUSTER VPC =====
+{
+    "VpcId": "vpc-0a193c45e151d961d",
+    "SubnetIds": [
+        "subnet-0c8ba5309ccef069a",
+        "subnet-0fff89a05a16721f8"
+    ],
+    "SecurityGroupIds": []
+}
+
+===== RDS INSTANCE =====
+{
+    "DBInstanceIdentifier": "django-rds-instance",
+    "Endpoint": "django-rds-instance.ctskymysi6zv.eu-central-1.rds.amazonaws.com",
+    "Port": 5432,
+    "Status": "available",
+    "DBSubnetGroup": "django-rds-subnet-group",
+    "VpcId": "vpc-0b54945bf169ee3e3",
+    "Subnets": [
+        "subnet-0dc38866a0ae9363a",
+        "subnet-09ee881e76fc49338",
+        "subnet-0f594a6bfc3a96055"
+    ],
+    "VpcSecurityGroups": [
+        "sg-0312b6036a3ffc343"
+    ]
+}
+
+===== RDS VPC =====
+{
+    "Vpcs": [
+        {
+            "OwnerId": "034255117140",
+            "InstanceTenancy": "default",
+            "CidrBlockAssociationSet": [
+                {
+                    "AssociationId": "vpc-cidr-assoc-025e9232826ec649f",
+                    "CidrBlock": "10.0.0.0/16",
+                    "CidrBlockState": {
+                        "State": "associated"
+                    }
+                }
+            ],
+            "IsDefault": false,
+            "Tags": [
+                {
+                    "Key": "Name",
+                    "Value": "django-gitops-vpc"
+                }
+            ],
+            "BlockPublicAccessStates": {
+                "InternetGatewayBlockMode": "off"
+            },
+            "VpcId": "vpc-0b54945bf169ee3e3",
+            "State": "available",
+            "CidrBlock": "10.0.0.0/16",
+            "DhcpOptionsId": "dopt-02d8dde6dafbfe521"
+        }
+    ]
+}
+
+===== EKS VPC =====
+{
+    "Vpcs": [
+        {
+            "OwnerId": "034255117140",
+            "InstanceTenancy": "default",
+            "CidrBlockAssociationSet": [
+                {
+                    "AssociationId": "vpc-cidr-assoc-097fd0d7c30c6e23d",
+                    "CidrBlock": "10.0.0.0/16",
+                    "CidrBlockState": {
+                        "State": "associated"
+                    }
+                }
+            ],
+            "IsDefault": false,
+            "Tags": [
+                {
+                    "Key": "Name",
+                    "Value": "django-gitops-vpc"
+                }
+            ],
+            "BlockPublicAccessStates": {
+                "InternetGatewayBlockMode": "off"
+            },
+            "VpcId": "vpc-0a193c45e151d961d",
+            "State": "available",
+            "CidrBlock": "10.0.0.0/16",
+            "DhcpOptionsId": "dopt-02d8dde6dafbfe521"
+        }
+    ]
+}
