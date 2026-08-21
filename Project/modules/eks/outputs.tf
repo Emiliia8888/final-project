@@ -9,3 +9,7 @@ output "cluster_endpoint" {
 output "cluster_certificate_authority_data" {
   value = module.aws_eks.cluster_certificate_authority_data
 }
+
+output "cluster_oidc_issuer" {
+  value = module.aws_eks.cluster_oidc_issuer_url
+}

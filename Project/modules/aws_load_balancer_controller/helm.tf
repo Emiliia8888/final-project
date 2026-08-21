@@ -5,24 +5,25 @@ resource "helm_release" "aws_load_balancer_controller" {
   version    = "3.4.2"
   namespace  = "kube-system"
 
-  set = [
-    {
-      name  = "clusterName"
-      value = var.cluster_name
-    },
-    {
-      name  = "vpcId"
-      value = var.vpc_id
-    },
-    {
-      name  = "serviceAccount.create"
-      value = "false"
-    },
-    {
-      name  = "serviceAccount.name"
-      value = "aws-load-balancer-controller"
-    }
-  ]
+  set {
+    name  = "clusterName"
+    value = var.cluster_name
+  }
+
+  set {
+    name  = "vpcId"
+    value = var.vpc_id
+  }
+
+  set {
+    name  = "serviceAccount.create"
+    value = "false"
+  }
+
+  set {
+    name  = "serviceAccount.name"
+    value = "aws-load-balancer-controller"
+  }
 
   depends_on = [
     kubernetes_service_account_v1.aws_load_balancer_controller
