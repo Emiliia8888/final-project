@@ -7,7 +7,6 @@ replicaCount: 1
 
 containerPort: 8000
 
-
 database:
   host: "django-rds-instance.ctskymysi6zv.eu-central-1.rds.amazonaws.com"
   name: "django"
