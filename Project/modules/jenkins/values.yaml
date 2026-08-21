@@ -1,0 +1,21 @@
+controller:
+  serviceType: LoadBalancer
+
+  admin:
+    createSecret: true
+
+  installPlugins:
+    - kubernetes
+    - workflow-aggregator
+    - git
+    - configuration-as-code
+
+persistence:
+  enabled: true
+  size: 10Gi
+
+serviceAccount:
+  create: true
+
+rbac:
+  create: true
