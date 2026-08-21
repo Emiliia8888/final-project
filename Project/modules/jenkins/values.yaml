@@ -19,3 +19,8 @@ serviceAccount:
 
 rbac:
   create: true
+
+controller:
+  serviceType: LoadBalancer
+  serviceAnnotations:
+    service.beta.kubernetes.io/aws-load-balancer-type: nlb
